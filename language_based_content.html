@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset= " UTF-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+    <title>Multilingual Content Explorer</title>
+    <link href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel = "stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        header {
+            background-color: #ff6200;
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        main {
+            padding: 6rem 2rem 2rem;
+        }
+
+        .language-selection {
+            margin-bottom: 2rem;
+            background-color: #2c2c2c;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .language-selection p {
+            margin: 0 0 1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .language-selection label {
+            margin-right: 1.5rem;
+            color: #d3d3d3;
+            font-size: 1rem;
+        }
+
+        .language-selection input[type="checkbox"] {
+            accent-color: #ff6200;
+            margin-right: 0.5rem;
+        }
+
+        .content-category {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ff6200;
+            margin-bottom: 1rem;
+        }
+
+        .scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 1.5rem;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: #ff6200 #2c2c2c;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #ff6200;
+            border-radius: 4px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+
+        .audiobook-card {
+            flex: 0 0 180px;
+            background: #2c2c2c;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+
+        .audiobook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #3a3a3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #d3d3d3;
+            text-align: center;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .audiobook-card div {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .audiobook-card h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .audiobook-card p {
+            margin: 0.5rem 0 0;
+            font-size: 0.9rem;
+            color: #d3d3d3;
+        }
+
+        button {
+            background-color: #ff6200;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #e55d00;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Multilingual Content Explorer</h1>
+    </header>
+    <main>
+        <div class="language-selection">
+            <p>Select one or more languages:</p>
+            <label><input type="checkbox" name="language" value="Hindi"> Hindi</label>
+            <label><input type="checkbox" name="language" value="English"> English</label>
+            <label><input type="checkbox" name="language" value="Marathi"> Marathi</label>
+            <label><input type="checkbox" name="language" value="Telugu"> Telugu</label>
+            <br><br>
+            <button id="submitBtn">Show Content</button>
+        </div>
+        <div id="results" class="content-category"></div>
+    </main>
+
+    <script>
+        const data = {
+            "Hindi": [
+                { title: "Dil Bechara", genres: ["Romance", "Drama", "Coming-of-age"] },
+                { title: "Ajab sa Ishq", genres: ["Romance", "Fantasy", "Drama"] },
+                { title: "SHIVAY: Brahmand ka Yoddha", genres: ["Action", "Fantasy", "Adventure"] },
+                { title: "My Mysterious Husband", genres: ["Mystery", "Suspense", "Romance"] },
+                { title: "Secret Billionaire", genres: ["Drama", "Suspense", "Romance"] },
+                { title: "Jobless Ghar Jamai", genres: ["Drama", "Romance", "Comedy"] },
+                { title: "Yeh Ghar Jamai Hai Khaas", genres: ["Comedy", "Drama", "Family"] },
+                { title: "Wonder Boy Ishaan", genres: ["Family", "Action", "Adventure"] },
+                { title: "Dil se Divorce", genres: ["Drama", "Suspense", "Romance"] },
+                { title: "Miracle Doctor", genres: ["Fantasy", "Drama", "Suspense"] },
+                { title: "Robot Romeo", genres: ["Fantasy", "Romance", "Suspense"] },
+                { title: "IRON WILL: The Jamshedji Tata Story", genres: ["Documentary", "Motivation", "Finance"] },
+                { title: "Veer Hanuman", genres: ["Religion", "Historical", "Action"] },
+                { title: "Chanakya Neeti", genres: ["Motivation", "Historical", "Documentary"] },
+                { title: "Mystery of 7 Immortals", genres: ["Religion", "Fantasy", "Mystery"] }
+            ],
+            "English": [
+                { title: "The Last Painting", genres: ["Drama", "Crime", "Mystery"] },
+                { title: "Secrets of Milbrook High", genres: ["Thriller", "Crime", "Drama"] },
+                { title: "The Forgotten Mother", genres: ["Drama", "Family", "Mystery"] },
+                { title: "The divorced billionaire heiress", genres: ["Drama", "Family", "Fantasy"] },
+                { title: "Forbidden desire", genres: ["Romance", "Drama", "Thriller"] },
+                { title: "The lawyer", genres: ["Drama", "Suspense", "Crime"] },
+                { title: "The hero takes revenge", genres: ["Action", "Adventure", "Drama"] },
+                { title: "Secret door to success", genres: ["Finance", "Motivation", "Coming-of-age"] },
+                { title: "The art of war", genres: ["Historical", "Documentary", "Motivation"] },
+                { title: "Eternal echoes", genres: ["Fantasy", "Adventure", "Action"] },
+                { title: "The time travelled tycooness", genres: ["Fantasy", "Drama", "Adventure"] },
+                { title: "Twisted games", genres: ["Suspense", "Thriller", "Adventure"] },
+                { title: "The sinner", genres: ["Crime", "Suspense", "Action"] },
+                { title: "The unstoppable rise of veganism", genres: ["Documentary", "Historical", "Finance"] },
+                { title: "The holy bible", genres: ["Religion", "Historical", "Documentary"] }
+            ],
+            "Telugu": [
+                { title: "Jānaki vimukti", genres: ["Motivation", "Drama", "Family"] },
+                { title: "Pathēr pān̄cālī", genres: ["Thriller", "Classic", "Drama"] },
+                { title: "Kaccitamaina javābu", genres: ["Drama", "Comedy", "Coming-Of-Age"] },
+                { title: "Kalupu mokkalu", genres: ["Drama", "Patriotic", "Classic"] },
+                { title: "Ēḍu tarālu", genres: ["Historical", "Suspense", "Drama"] },
+                { title: "Visthāpana - vidhvansaṁ", genres: ["Drama", "Adventure", "Historical"] },
+                { title: "Ramaṇa maharṣi bōdhanalu", genres: ["Motivation", "Drama", "Coming-Of-Age"] },
+                { title: "Vimukta", genres: ["Adventure", "Mystery", "Family"] },
+                { title: "Mālapalli", genres: ["Family", "Comedy", "Drama"] },
+                { title: "Tripatha", genres: ["Religion", "Documentary", "Family"] },
+                { title: "Bhinna sandarbhālu", genres: ["Drama", "Family", "Comedy"] },
+                { title: "Mārgadarśi", genres: ["Family", "Drama", "Coming-Of-Age"] },
+                { title: "Digantaṁ", genres: ["Drama", "Fantasy", "Adventure"] },
+                { title: "Death Served Cold", genres: ["Crime", "Mystery", "Documentary"] },
+                { title: "Khākīvanaṁ", genres: ["Crime", "Action", "Thriller"] }
+            ],
+            "Marathi": [
+                { title: "Hi vaat door jate", genres: ["Drama", "Romance", "Coming-of-age"] },
+                { title: "Valnavarchya Vata", genres: ["Romance", "Action", "Adventure"] },
+                { title: "Chandravanshiya Yayati", genres: ["Suspense", "Drama", "Adventure"] },
+                { title: "Unconditional Love- Olakh kharya premachi", genres: ["Family", "Drama", "Romance"] },
+                { title: "Anurupa", genres: ["Drama", "Romance", "Coming-of-age"] },
+                { title: "Vafallele Diwas", genres: ["Romance", "Action", "Adventure"] },
+                { title: "Rau", genres: ["Suspense", "Drama", "Adventure"] },
+                { title: "Kaidyancha Khajina", genres: ["Family", "Drama", "Coming-Of-Age"] },
+                { title: "Madhuchandra", genres: ["Drama", "Fantasy", "Adventure"] },
+                { title: "Badshahi Jasud", genres: ["Crime", "Mystery", "Documentary"] },
+                { title: "Nate ani Sambandh", genres: ["Crime", "Action", "Thriller"] },
+                { title: "Chordarvaja", genres: ["Thriller", "Fantasy", "Crime"] },
+                { title: "First Love", genres: ["Comedy", "Drama", "Family"] },
+                { title: "Robinhood aani tyache rangel gadi", genres: ["Family", "Action", "Adventure"] },
+                { title: "Chaganche Chrahat Chaluch", genres: ["Drama", "Suspense", "Romance"] }
+            ]
+        };
+
+        const genreFilters = {
+            "Timeless Thrillers": ["Thriller", "Suspense", "Crime", "Mystery"],
+            "Feel-Good Refreshments": ["Drama", "Romance", "Family", "Comedy"],
+            "Astounding Adventures": ["Action", "Adventure", "Fantasy"]
+        };
+
+        function getRandomItems(arr, count) {
+            let copy = arr.slice();
+            let result = [];
+            while (result.length < count) {
+                if (copy.length === 0) copy = arr.slice();
+                let idx = Math.floor(Math.random() * copy.length);
+                result.push(copy.splice(idx, 1)[0]);
+            }
+            return result;
+        }
+
+        function filterContent(contentArr, filterGenres) {
+            if (!filterGenres) return contentArr;
+            return contentArr.filter(item =>
+                item.genres.some(genre => filterGenres.includes(genre))
+            );
+        }
+
+        function reorderConstrained(items) {
+            let result = [];
+            let remaining = items.slice();
+            while (remaining.length > 0) {
+                let valid = remaining.filter(item => {
+                    if (result.length >= 2) {
+                        let lang1 = result[result.length - 1].language;
+                        let lang2 = result[result.length - 2].language;
+                        return !(item.language === lang1 && item.language === lang2);
+                    }
+                    return true;
+                });
+                if (valid.length === 0) {
+                    valid = remaining;
+                }
+                let idx = Math.floor(Math.random() * valid.length);
+                let chosen = valid[idx];
+                let removeIdx = remaining.findIndex(item => item === chosen);
+                remaining.splice(removeIdx, 1);
+                result.push(chosen);
+            }
+            return result;
+        }
+
+        function processContent() {
+            const checkboxes = document.querySelectorAll('input[name="language"]:checked');
+            const selectedLangs = Array.from(checkboxes).map(cb => cb.value);
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+            if (selectedLangs.length === 0) {
+                resultsDiv.innerHTML = "<p style='color: #d3d3d3;'>Please select at least one language.</p>";
+                return;
+            }
+            const lists = {
+                "TOP 10": { filter: null },
+                "Timeless Thrillers": { filter: genreFilters["Timeless Thrillers"] },
+                "Feel-Good Refreshments": { filter: genreFilters["Feel-Good Refreshments"] },
+                "Astounding Adventures": { filter: genreFilters["Astounding Adventures"] }
+            };
+            for (let listName in lists) {
+                let listFilter = lists[listName].filter;
+                let combined = [];
+                let baseCount = Math.floor(10 / selectedLangs.length);
+                let remainder = 10 % selectedLangs.length;
+                selectedLangs.forEach((lang, idx) => {
+                    let required = baseCount + (idx < remainder ? 1 : 0);
+                    let contentForLang = data[lang] || [];
+                    if (listFilter) {
+                        contentForLang = filterContent(contentForLang, listFilter);
+                    }
+                    let selectedItems = getRandomItems(contentForLang, required);
+                    selectedItems = selectedItems.map(item => ({...item, language: lang}));
+                    combined = combined.concat(selectedItems);
+                });
+                if (combined.length < 10) {
+                    let additionalItems = getRandomItems(combined, 10 - combined.length);
+                    combined = combined.concat(additionalItems);
+                }
+                if (listName === "TOP 10") {
+                    combined = getRandomItems(combined, 10);
+                } else {
+                    combined = combined.slice(0, 10);
+                }
+                if (selectedLangs.length > 1) {
+                    combined = reorderConstrained(combined);
+                }
+                lists[listName].items = combined;
+            }
+
+            for (let listName in lists) {
+                let section = document.createElement("div");
+                section.className = "content-category";
+                let header = document.createElement("h2");
+                header.textContent = listName;
+                section.appendChild(header);
+                let scrollContainer = document.createElement("div");
+                scrollContainer.className = "scroll-container";
+                if (lists[listName].items.length === 0) {
+                    let card = document.createElement("div");
+                    card.className = "audiobook-card";
+                    card.innerHTML = "<div><h3>No content available</h3></div>";
+                    scrollContainer.appendChild(card);
+                } else {
+                    lists[listName].items.forEach(item => {
+                        let card = document.createElement("div");
+                        card.className = "audiobook-card";
+                        card.innerHTML = `
+                            <div class="image-placeholder">Image to be placed</div>
+                            <div>
+                                <h3>${item.title}</h3>
+                                <p>(${item.language})</p>
+                            </div>
+                        `;
+                        scrollContainer.appendChild(card);
+                    });
+                }
+                section.appendChild(scrollContainer);
+                resultsDiv.appendChild(section);
+            }
+        }
+        document.getElementById("submitBtn").addEventListener("click", function(e) {
+            e.preventDefault();
+            processContent();
+        });
+    </script>
+</body>
+</html>

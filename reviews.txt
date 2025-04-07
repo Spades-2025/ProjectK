@@ -1,0 +1,51 @@
+1.	“Absolutely riveting! The narrator brought every character to life, and I couldn’t stop listening.”
+2.	“Intrigue, drama, and a twist I never saw coming. This was an edge-of-your-seat experience.”
+3.	“The voice acting was phenomenal! It felt like a movie in my head.”
+4.	“A perfect blend of teen drama and mystery. The pacing was spot on.”
+5.	“Couldn’t put it down. The twists kept me guessing until the very end.”
+6.	“Brilliantly written and performed. Sarah Reeves is a fantastic protagonist.”
+7.	“The suspense was intense, and the layered secrets made it hard to pause.”
+8.	“Reminded me of Pretty Little Liars, but darker and more grounded. Loved it.”
+9.	“So many red herrings! Loved trying to solve the mystery alongside Sarah.”
+10.	“One of the best audiobooks I’ve listened to this year. Highly recommend!”
+11.	“Impressive character depth and an immersive plot. Millbrook feels so real.”
+12.	“Every voice was distinct, which really helped with keeping track of the characters.”
+13.	“This story had me hooked from the first chapter. Great atmosphere.”
+14.	“Loved the small-town secrets trope. This one nailed it.”
+15.	“If you enjoy mystery with a psychological twist, this is your audiobook.”
+16.	“The blackmail angle added an extra layer of tension that worked really well.”
+17.	“Clever storytelling and an ending that gave me chills.”
+18.	“More than a mystery — it’s also a deep dive into how people cope with guilt.”
+19.	“I binged the whole thing in two days. That says it all.”
+20.	“The unraveling of the mystery was so satisfying. I’d love a sequel!”
+21.	“The mystery was engaging, but the pacing dragged in the middle.”
+22.	“Good, not great. Some twists felt forced, but I enjoyed the narration.”
+23.	“Well-written characters, though I found the resolution a bit predictable.”
+24.	“Decent listen, though not particularly memorable. Enjoyable for a rainy day.”
+25.	“Strong start, but it lost momentum towards the end.”
+26.	“Some plot points felt unresolved, but I liked the atmosphere overall.”
+27.	“I liked the concept more than the execution. Still worth a listen.”
+28.	“Not sure if it was the story or the narrator’s pacing, but it didn’t fully grip me.”
+29.	“Nice mix of drama and mystery, though a few characters were underdeveloped.”
+30.	“Kept me entertained, but I didn’t feel emotionally connected to the characters.”
+31.	“The blackmail subplot was intriguing, but the reveal felt rushed.”
+32.	“A bit of a slow burn. Got better after the halfway mark.”
+33.	“Good narration, though some of the teenage dialogue felt cringey.”
+34.	“It had potential, but didn’t quite stick the landing.”
+35.	“Some inconsistencies in character behavior pulled me out of the story.”
+36.	“Listened to it during my commute — held my attention, but not unforgettable.”
+37.	“Enjoyable enough, but I wouldn’t listen to it again.”
+38.	“Middle-of-the-road mystery. Some clichés, but decent atmosphere.”
+39.	“The investigation was interesting, but the side plots were distracting.”
+40.	“It had its moments, but I expected more depth from some of the characters.”
+41.	“I found the story too slow and repetitive. Gave up halfway.”
+42.	“The narration didn’t work for me — very monotone and hard to engage with.”
+43.	“Too many characters and not enough development. Confusing at times.”
+44.	“Predictable twists and flat dialogue made this a chore to finish.”
+45.	“I didn’t feel the suspense at all. Everything felt surface-level.”
+46.	“Overhyped. The mystery was basic and the ending unsatisfying.”
+47.	“I struggled to care about any of the characters. They all felt one-dimensional.”
+48.	“High school drama overshadowed the mystery in a bad way.”
+49.	“The premise sounded great, but the execution missed the mark.”
+50.	“Felt like a YA soap opera with a weak detective subplot.”
+
