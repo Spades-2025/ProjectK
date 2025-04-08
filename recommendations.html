@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Content Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Base Styles --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        /* --- Main Explorer Styles --- */
+        header.main-header { /* Renamed to avoid conflict */
+            background-color: #ff6200;
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        header.main-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        main {
+            padding: 6rem 2rem 2rem; /* Adjusted top padding for fixed header */
+        }
+
+        .content-category {
+            margin-bottom: 3rem;
+        }
+
+        .content-category h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ff6200;
+            margin-bottom: 1rem;
+        }
+
+        /* Style for recommendation section */
+         .recommendation-section h2 {
+              color: #4CAF50; /* Greenish color for recommendation */
+         }
+         .no-recommendations {
+             color: #888;
+             padding: 1rem;
+             text-align: center;
+             background-color: #2c2c2c;
+             border-radius: 8px;
+             margin-top: 1rem;
+         }
+
+        .scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 1.5rem;
+            padding-bottom: 1rem; /* Space for scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #ff6200 #2c2c2c;
+        }
+
+        .scroll-container::-webkit-scrollbar { height: 8px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: #ff6200; border-radius: 4px; }
+        .scroll-container::-webkit-scrollbar-track { background: #2c2c2c; border-radius: 4px; }
+
+        .audiobook-card {
+            flex: 0 0 180px; /* Fixed width for cards */
+            background: #2c2c2c;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .audiobook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .audiobook-card .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #3a3a3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #d3d3d3;
+            text-align: center;
+        }
+
+        .audiobook-card .card-content {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .audiobook-card h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .audiobook-card p {
+            margin: 0.5rem 0 0;
+            font-size: 0.9rem;
+            color: #d3d3d3;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <h1>KUKU FM</h1>
+    </header>
+    <main id="main-content-area"> <div id="results">
+            </div>
+    </main>
+
+    <script>
+        // --- Data ---
+        const data = {
+             "Hindi": [ { title: "Dil Bechara", genres: ["Romance", "Drama", "Coming-of-age"] }, { title: "Ajab sa Ishq", genres: ["Romance", "Fantasy", "Drama"] }, { title: "SHIVAY: Brahmand ka Yoddha", genres: ["Action", "Fantasy", "Adventure"] }, { title: "My Mysterious Husband", genres: ["Mystery", "Suspense", "Romance"] }, { title: "Secret Billionaire", genres: ["Drama", "Suspense", "Romance"] }, { title: "Jobless Ghar Jamai", genres: ["Drama", "Romance", "Comedy"] }, { title: "Yeh Ghar Jamai Hai Khaas", genres: ["Comedy", "Drama", "Family"] }, { title: "Wonder Boy Ishaan", genres: ["Family", "Action", "Adventure"] }, { title: "Dil se Divorce", genres: ["Drama", "Suspense", "Romance"] }, { title: "Miracle Doctor", genres: ["Fantasy", "Drama", "Suspense"] } ], // [cite: 201, 202]
+             "English": [ { title: "The Last Painting", genres: ["Drama", "Crime", "Mystery"] }, { title: "Secrets of Milbrook High", genres: ["Thriller", "Crime", "Drama"] }, { title: "The Forgotten Mother", genres: ["Drama", "Family", "Mystery"] }, { title: "The divorced billionaire heiress", genres: ["Drama", "Family", "Fantasy"] }, { title: "Forbidden desire", genres: ["Romance", "Drama", "Thriller"] }, { title: "The lawyer", genres: ["Drama", "Suspense", "Crime"] }, { title: "The hero takes revenge", genres: ["Action", "Adventure", "Drama"] }, { title: "Secret door to success", genres: ["Finance", "Motivation", "Coming-of-age"] }, { title: "The art of war", genres: ["Historical", "Documentary", "Motivation"] }, { title: "Eternal echoes", genres: ["Fantasy", "Adventure", "Action"] } ], // [cite: 203, 204]
+             "Telugu": [ { title: "Jānaki vimukti", genres: ["Motivation", "Drama", "Family"] }, { title: "Pathēr pān̄cālī", genres: ["Thriller", "Classic", "Drama"] }, { title: "Kaccitamaina javābu", genres: ["Drama", "Comedy", "Coming-Of-Age"] }, { title: "Kalupu mokkalu", genres: ["Drama", "Patriotic", "Classic"] }, { title: "Ēḍu tarālu", genres: ["Historical", "Suspense", "Drama"] }, { title: "Visthāpana - vidhvansaṁ", genres: ["Drama", "Adventure", "Historical"] }, { title: "Ramaṇa maharṣi bōdhanalu", genres: ["Motivation", "Drama", "Coming-Of-Age"] }, { title: "Vimukta", genres: ["Adventure", "Mystery", "Family"] }, { title: "Mālapalli", genres: ["Family", "Comedy", "Drama"] }, { title: "Tripatha", genres: ["Religion", "Documentary", "Family"] } ], // [cite: 204, 205]
+             "Marathi": [ { title: "Hi vaat door jate", genres: ["Drama", "Romance", "Coming-of-age"] }, { title: "Valnavarchya Vata", genres: ["Romance", "Action", "Adventure"] }, { title: "Chandravanshiya Yayati", genres: ["Suspense", "Drama", "Adventure"] }, { title: "Unconditional Love- Olakh kharya premachi", genres: ["Family", "Drama", "Romance"] }, { title: "Anurupa", genres: ["Drama", "Romance", "Coming-of-age"] }, { title: "Vafallele Diwas", genres: ["Romance", "Action", "Adventure"] }, { title: "Rau", genres: ["Suspense", "Drama", "Adventure"] }, { title: "Kaidyancha Khajina", genres: ["Family", "Drama", "Coming-Of-Age"] }, { title: "Madhuchandra", genres: ["Drama", "Fantasy", "Adventure"] }, { title: "Badshahi Jasud", genres: ["Crime", "Mystery", "Documentary"] } ] // [cite: 205, 206]
+        };
+        const genreFilters = {
+            "Timeless Thrillers": ["Thriller", "Suspense", "Crime", "Mystery"],
+            "Feel-Good Refreshments": ["Drama", "Romance", "Family", "Comedy"],
+            "Astounding Adventures": ["Action", "Adventure", "Fantasy"]
+        }; // [cite: 207]
+        // --- GLOBAL Helper Functions ---
+        function getRandomItems(arr = [], count) { // Add default empty array
+             if (!Array.isArray(arr) || arr.length === 0) return []; // [cite: 208]
+             const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, Math.min(count, arr.length)); // [cite: 209]
+        }
+
+        function filterContent(contentArr = [], filterGenres = []) { // Add defaults
+            if (!Array.isArray(contentArr) || contentArr.length === 0) return []; // [cite: 210]
+            if (!Array.isArray(filterGenres) || filterGenres.length === 0) return contentArr; // [cite: 211]
+
+            return contentArr.filter(item =>
+                 // Ensure item and genres exist before checking
+                 item && Array.isArray(item.genres) &&
+                 item.genres.some(genre => filterGenres.includes(genre))
+            ); // [cite: 211]
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return ''; // [cite: 212]
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;"); // [cite: 213]
+        }
+
+
+        function createDisplayStars(rating) {
+            let starsHTML = '';
+             // Robust check for rating input
+             const numRating = typeof rating === 'number' ? rating : parseFloat(rating);
+            if (isNaN(numRating)) { // Handle invalid rating input // [cite: 214]
+                console.warn("Invalid rating passed to createDisplayStars:", rating);
+                for (let i = 1; i <= 5; i++) starsHTML += '<span class="star">☆</span>'; // Show all empty // [cite: 215]
+                 return `<div class="display-stars">${starsHTML}</div>`;
+            }
+            const fullStars = Math.floor(numRating);
+            const hasHalfStar = numRating % 1 >= 0.5; // [cite: 215, 216]
+            for (let i = 1; i <= 5; i++) {
+                if (i <= fullStars) { starsHTML += '<span class="star filled">★</span>'; } // [cite: 216, 217]
+                else if (i === fullStars + 1 && hasHalfStar) { starsHTML += '<span class="star half">★</span>'; } // [cite: 217]
+                else { starsHTML += '<span class="star">☆</span>'; } // [cite: 218]
+            }
+            return `<div class="display-stars">${starsHTML}</div>`; // [cite: 219, 220]
+        }
+
+         function createInputStarsHTML() {
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) { starsHTML += `<span class="input-star" data-value="${i}">☆</span>`; } // [cite: 220, 221]
+             return `<div class="input-stars-container" id="page-rating-stars">${starsHTML}</div>`; // [cite: 222]
+        }
+          function createPopupInputStarsHTML() {
+             let starsHTML = '';
+             for (let i = 1; i <= 5; i++) { starsHTML += `<span class="input-star" data-value="${i}">☆</span>`; } // [cite: 223, 224]
+              return `<div class="input-stars-container" id="popup-rating-stars">${starsHTML}</div>`; // [cite: 225]
+        }
+
+        // --- Preference Management ---
+        const PREF_KEY = 'audiobookPrefs_v1'; // [cite: 226, 227]
+        // Added version just in case structure changes later
+
+        function getPreferences() {
+            try {
+                const stored = localStorage.getItem(PREF_KEY);
+                if (stored) { // [cite: 227, 228]
+                    const prefs = JSON.parse(stored);
+                    // Validate and ensure Sets are restored // [cite: 229]
+                    const likedGenres = Array.isArray(prefs.likedGenres) ? new Set(prefs.likedGenres) : new Set(); // [cite: 229, 230]
+                    const dislikedTitles = Array.isArray(prefs.dislikedTitles) ? new Set(prefs.dislikedTitles) : new Set();
+                     return { likedGenres, dislikedTitles }; // [cite: 230]
+                }
+            } catch (e) {
+                console.error("Error reading preferences:", e); // [cite: 231]
+                localStorage.removeItem(PREF_KEY); // Clear potentially corrupted data // [cite: 232]
+            }
+            return { likedGenres: new Set(), dislikedTitles: new Set() }; // [cite: 232, 233]
+            // Default empty
+        }
+
+        function savePreferences(prefs) {
+            // Validate input structure
+             if (!prefs || !(prefs.likedGenres instanceof Set) || !(prefs.dislikedTitles instanceof Set)) {
+                console.error("Invalid preferences object passed to savePreferences:", prefs); // [cite: 233]
+                return;
+             } // [cite: 234]
+            try {
+                const storablePrefs = {
+                    likedGenres: Array.from(prefs.likedGenres),
+                    dislikedTitles: Array.from(prefs.dislikedTitles)
+                };
+                localStorage.setItem(PREF_KEY, JSON.stringify(storablePrefs)); // [cite: 235]
+                console.log("Preferences saved:", storablePrefs);
+            } catch (e) {
+                console.error("Error saving preferences:", e); // [cite: 235, 236]
+            }
+        }
+
+        function addLikedGenres(genres = []) {
+            if (!Array.isArray(genres) || genres.length === 0) return; // [cite: 236, 237]
+            console.log("Attempting to add liked genres:", genres);
+            const prefs = getPreferences();
+            let changed = false; // [cite: 237]
+            genres.forEach(genre => {
+                 if (typeof genre === 'string' && genre.trim() !== '' && !prefs.likedGenres.has(genre)) {
+                     prefs.likedGenres.add(genre);
+                     changed = true;
+                 } // [cite: 238]
+
+            }); // [cite: 239]
+             if(changed) {
+                 savePreferences(prefs);
+                 triggerHomepageRefresh(); // [cite: 240]
+             }
+        }
+
+        function addDislikedTitle(title) {
+            if (!title || typeof title !== 'string') return; // [cite: 240, 241]
+            console.log("Attempting to add disliked title:", title);
+            const prefs = getPreferences(); // [cite: 241]
+            if (!prefs.dislikedTitles.has(title)) {
+                prefs.dislikedTitles.add(title);
+                savePreferences(prefs);
+                triggerHomepageRefresh(); // [cite: 242, 243]
+             }
+        }
+
+         function triggerHomepageRefresh() {
+             console.log("Preference updated. Consider refreshing the homepage."); // [cite: 243]
+             // Refresh logic remains best-effort // [cite: 244]
+             try {
+                  if (window.opener && !window.opener.closed && typeof window.opener.processContent === 'function') {
+                      console.log("Attempting to refresh opener...");
+                      window.opener.location.reload(); // [cite: 244, 245]
+                  }
+             } catch (e) { console.error("Could not refresh opener:", e); } // [cite: 245, 246]
+         }
+
+
+        // --- Page Creation Functions ---
+
+        function createAudiobookPage(title, language) {
+             const safeTitle = escapeHtml(title);
+             const safeLanguage = escapeHtml(language); // [cite: 246, 247]
+             const encodedTitle = encodeURIComponent(title || '');
+             const encodedLanguage = encodeURIComponent(language || ''); // [cite: 247]
+             // Simplified: Assuming createAudiobookPage template is correct from previous versions // [cite: 248]
+             return `
+ <!DOCTYPE html><html><head><title>${safeTitle}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;font-family:'Inter',sans-serif;background-color:#1a1a1a;color:#fff;padding:2rem;} header{background-color:#ff6200;padding:1rem;text-align:center;border-radius:12px;margin-bottom:2rem;} h1{margin:0;font-size:1.8rem;font-weight:700;} .content{background:#2c2c2c;padding:2rem;border-radius:12px;text-align:center;} .img-placeholder{width:100%;max-width:300px;height:300px;background:#3a3a3a;margin:0 auto 1.5rem;border-radius:12px;display:flex;align-items:center;justify-content:center;} h2{color:#ff6200;margin-bottom:1rem;} p{line-height:1.6;margin-bottom:1.5rem;} .btn{background-color:#ff6200;border:none;padding:0.8rem 1.8rem;color:#fff;font-weight:600;font-size:1.1rem;border-radius:8px;cursor:pointer;transition:background-color .2s ease;text-decoration:none;display:inline-block;margin:.5rem;} .btn:hover{background-color:#e55d00;}</style></head><body> <header><h1>${safeTitle}</h1></header> <div class="content"> <div class="img-placeholder">Cover Art</div> <h2>${safeTitle} (${safeLanguage})</h2> <p>Placeholder description for ${safeTitle}.</p> <button class="btn play-button">Play Now</button> <div class="button-container"> <a href="#" onclick="openPage('Reviews', '${encodedTitle}', '${encodedLanguage}');return false;" class="btn action-button">Reviews</a> <a href="#" onclick="openPage('Episodes', '${encodedTitle}', '${encodedLanguage}');return false;" class="btn action-button">Episodes</a> <a href="#" onclick="openPage('Related', '${encodedTitle}', '${encodedLanguage}');return false;" class="btn action-button">Related</a> </div> </div> <script> function openPage(pageType, encodedTitle, encodedLanguage){ let content=''; // [cite: 249, 250]
+ try { if(window.opener && typeof window.opener.createPageContent === 'function'){ const title = decodeURIComponent(encodedTitle||''); const language = decodeURIComponent(encodedLanguage||''); // [cite: 251]
+ content = window.opener.createPageContent(pageType, title, language); } else { console.error('Cannot access opener function.'); content='<html><body>Error: Cannot generate page.</body></html>'; // [cite: 252]
+ } } catch(e){ console.error('Error calling opener:',e); content='<html><body>Error: Security issue.</body></html>'; } const newWindow = window.open('','_blank'); if(newWindow){ newWindow.document.write(content); newWindow.document.close(); // [cite: 253]
+ } else { alert('Popup blocked.'); } } <\/script> </body></html>`; // [cite: 254]
+        }
+
+        function createReviewsPage(title, language, genres = []) {
+             const safeTitle = escapeHtml(title);
+             const safeLanguage = escapeHtml(language); // [cite: 254, 255]
+             const safeGenresString = escapeHtml(JSON.stringify(Array.isArray(genres) ? genres : []));
+             const averageRating = 4.5;
+             const totalRatings = "2,715,276"; // [cite: 255]
+             const distribution = { 5: 70, 4: 15, 3: 8, 2: 4, 1: 3 }; // [cite: 256]
+             const sampleReviews = [ /* ... data ... */ ]; // [cite: 257]
+             let userReviewsHTML = '';
+             sampleReviews.forEach(review => { userReviewsHTML += `<div class="user-review"><div class="review-header"><span class="review-user">${escapeHtml(review.user)}</span><div class="review-rating">${createDisplayStars(review.rating)}</div></div><p class="review-text">${escapeHtml(review.text)}</p></div>`; }); // [cite: 258]
+             // Use global helpers createInputStarsHTML/createPopupInputStarsHTML/createDisplayStars // [cite: 259]
+             return `
+ <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${safeTitle} - Reviews</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;font-family:'Inter',sans-serif;background-color:#1a1a1a;color:#fff;padding:0;} .review-page-container{padding:1rem 1.5rem 2rem;max-width:800px;margin:0 auto;} .rate-section{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid #333;} h2{font-size:1.1rem;font-weight:600;color:#eee;margin:0 0 .25rem 0;} .rate-section p{font-size:.9rem;color:#aaa;margin:0 0 1rem 0;} .input-stars-container{display:inline-flex;gap:.5rem;cursor:pointer;margin-bottom:1rem;} .input-star{font-size:2.2rem;color:#555;transition:color .1s ease;line-height:1;} .input-star.hover,.input-star.selected{color:#ffb400;} .write-review-button{display:inline-block;padding:.6rem 1.5rem;border:1px solid #ff6200;color:#ff6200;background-color:transparent;border-radius:20px;text-decoration:none;font-weight:600;font-size:.9rem;margin-bottom:2.5rem;transition:background-color .2s ease,color .2s ease;cursor:pointer;text-align:center;} .write-review-button:hover{background-color:rgba(255,98,0,.1);} .ratings-summary-section{margin-bottom:2.5rem;} .ratings-summary-section h2{margin-bottom:1.5rem;} .summary-flex-container{display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;} .average-rating-display{text-align:center;flex-shrink:0;margin-bottom:1rem;} .rating-number{font-size:3.5rem;font-weight:700;color:#fff;line-height:1;margin-bottom:.25rem;} .display-stars{line-height:1;margin-bottom:.2rem;} .display-stars .star{display:inline-block;font-size:1rem;color:#555;margin:0 -1px;} .display-stars .star.filled{color:#ffb400;} .display-stars .star.half{color:#ffb400;} .total-count{font-size:.85rem;color:#aaa;margin-top:.5rem;} .rating-distribution{flex-grow:1;display:flex;flex-direction:column;gap:.4rem;min-width:200px;} .dist-row{display:flex;align-items:center;gap:.5rem;} .dist-label{font-size:.9rem;color:#ccc;width:10px;text-align:right;} .dist-bar-container{flex-grow:1;height:8px;background-color:#444;border-radius:4px;overflow:hidden;} .dist-bar{height:100%;background-color:#ffb400;border-radius:4px;transition:width .5s ease-out;} .ai-summary-section{padding-top:1.5rem;margin-bottom:2.5rem;border-top:1px solid #333;} .ai-summary-section h2{margin-bottom:.5rem;} .ai-summary-section h3{font-size:.9rem;font-weight:400;color:#bbb;margin:0 0 1.5rem 0;} .summary-block{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:1rem;} .summary-icon{font-size:1.1rem;flex-shrink:0;line-height:1.5;} .summary-text{font-size:.95rem;color:#ddd;line-height:1.5;margin:0;} .user-reviews-section{padding-top:1.5rem;border-top:1px solid #333;} .user-reviews-section h2{margin-bottom:1.5rem;} .user-review{border-bottom:1px solid #333;padding-bottom:1rem;margin-bottom:1rem;} .user-review:last-child{border-bottom:none;margin-bottom:0;} .review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;gap:.5rem;} .review-user{font-weight:600;color:#eee;font-size:.95rem;} .review-rating .display-stars .star{font-size:.9rem!important;} .review-text{font-size:.95rem;color:#ddd;line-height:1.5;margin:0;} .review-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:2000;} .review-popup-overlay.visible{display:flex;} .review-popup-content{background-color:#2c2c2c;padding:2rem;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.5);width:90%;max-width:500px;position:relative;} .popup-close-button{position:absolute;top:1rem;right:1rem;background:none;border:none;color:#aaa;font-size:1.5rem;cursor:pointer;line-height:1;padding:0;} .popup-close-button:hover{color:#fff;} .review-popup-content h3{margin:0 0 1rem 0;color:#eee;font-size:1.2rem;} .popup-rating-section,.popup-writing-section{display:none;} .review-popup-content.mode-rating .popup-rating-section{display:block;} .review-popup-content.mode-rating h3::after{content:' Rating';} .review-popup-content.mode-writing .popup-writing-section{display:block;} .review-popup-content.mode-writing h3::after{content:' Review';} .review-popup-content .input-stars-container{margin-bottom:1.5rem;} .review-popup-content textarea{width:100%;height:100px;background-color:#3a3a3a;color:#eee;border:1px solid #555;border-radius:8px;padding:.8rem;font-family:'Inter',sans-serif;font-size:1rem;box-sizing:border-box;margin-bottom:1.5rem;resize:vertical;} .popup-submit-button{display:block;width:100%;padding:.8rem;background-color:#ff6200;border:none;color:#fff;font-weight:600;font-size:1rem;border-radius:8px;cursor:pointer;transition:background-color .2s ease;} .popup-submit-button:hover{background-color:#e55d00;} </style></head><body> <div class="review-page-container" data-audiobook-title="${safeTitle}" data-audiobook-genres='${safeGenresString}'> <div class="rate-section"> <h2>Rate this audiobook</h2> <p>Tell others what you think</p> ${createInputStarsHTML()} </div> <a href="#" class="write-review-button" id="write-review-btn">Write a review</a> <div class="ratings-summary-section"> <h2>Ratings and reviews</h2> <div class="summary-flex-container"> <div class="average-rating-display"> <div class="rating-number">${averageRating.toFixed(1)}</div> ${createDisplayStars(averageRating)} <div class="total-count">${totalRatings} ratings</div> </div> <div class="rating-distribution"> ${[5,4,3,2,1].map(star => `<div class="dist-row"><span class="dist-label">${star}</span><div class="dist-bar-container"><div class="dist-bar" style="width:${distribution[star]}%;"></div></div></div>`).join('')} </div> </div> </div> <div class="ai-summary-section"> <h2>AI Generated Summary:</h2> <h3>Listeners said:</h3> <div class="summary-block"><span class="summary-icon">👍</span><p class="summary-text">Compelling plot, great twists, impressive writing.</p></div> <div class="summary-block"><span class="summary-icon">👎</span><p class="summary-text">Pacing slow at times, felt stretched, some confusing characters.</p></div> </div> <div class="user-reviews-section"> <h2>User Reviews</h2> <div id="user-reviews-list">${userReviewsHTML}</div> </div> </div> <div class="review-popup-overlay" id="review-popup"> <div class="review-popup-content" id="review-popup-content"> <button class="popup-close-button" id="popup-close-btn">&times;</button> <h3>Submit</h3> <div class="popup-rating-section">${createPopupInputStarsHTML()}</div> <div class="popup-writing-section"><textarea id="review-text-input" placeholder="Tell others what you think..."></textarea></div> <button class="popup-submit-button" id="popup-submit-btn">Submit</button> </div> </div> <script> (function(){ let currentPopupRating=0; // [cite: 260, 261]
+let currentPageRating=0; let currentPopupMode='rating'; let popup=null; let popupContent=null; let popupCloseBtn=null; let popupSubmitBtn=null; let popupStarsContainer=null; let popupReviewText=null; let pageStarsContainer=null; let writeReviewBtn=null; // [cite: 262]
+let pageContainer=null; function openReviewPopup(mode='rating',initialRating=0){ if(!popup||!popupContent)return; currentPopupMode=mode; currentPageRating=(mode==='rating')?initialRating:0; currentPopupRating=initialRating; popupContent.classList.remove('mode-rating','mode-writing'); popupContent.classList.add(mode==='rating'?'mode-rating':'mode-writing'); updateStarDisplay(popupStarsContainer,currentPopupRating); if(popupReviewText)popupReviewText.value=''; popup.classList.add('visible'); } function closeReviewPopup(){ if(popup)popup.classList.remove('visible'); // [cite: 263]
+} function submitReview(){ if(!pageContainer){console.error("Cannot find page container");return;} const title=pageContainer.dataset.audiobookTitle; let genres=[]; try{genres=JSON.parse(pageContainer.dataset.audiobookGenres||'[]');if(!Array.isArray(genres))genres=[];}catch(e){console.error("Error parsing genres:",e);genres=[];} let submissionData={title:title}; let alertMessage='Submission Successful!'; // [cite: 264]
+if(currentPopupMode==='rating'){ if(currentPopupRating===0){alert('Please select a star rating.');return;} submissionData.rating=currentPopupRating; alertMessage=\`Rating (\${currentPopupRating} stars) Submitted!\`; // [cite: 265]
+try{ if(window.opener&&!window.opener.closed){ if(currentPopupRating>=4){ if(typeof window.opener.addLikedGenres==='function'){window.opener.addLikedGenres(genres);} }else if(currentPopupRating<=2){ if(typeof window.opener.addDislikedTitle==='function'){window.opener.addDislikedTitle(title);} } }else{console.warn("Opener not accessible for prefs.");} }catch(e){console.error("Error updating prefs via opener:",e);} }else{ const reviewText=popupReviewText?popupReviewText.value.trim():''; // [cite: 266]
+if(!reviewText){alert('Please enter your review.');return;} submissionData.reviewText=reviewText; alertMessage=\`Review Submitted!\`; } console.log('Submitting:',submissionData); alert(alertMessage); closeReviewPopup(); } function updateStarDisplay(container,rating){ if(!container)return; const stars=container.querySelectorAll('.input-star'); // [cite: 267]
+stars.forEach(star=>{ const starValue=parseInt(star.dataset.value,10); if(starValue<=rating){ star.classList.add('selected'); star.textContent='★'; }else{ star.classList.remove('selected'); star.textContent='☆'; } star.classList.remove('hover'); }); } function handleStarHover(container,rating){ if(!container)return; const stars=container.querySelectorAll('.input-star'); // [cite: 268]
+stars.forEach(star=>{ const starValue=parseInt(star.dataset.value,10); if(starValue<=rating){ star.classList.add('hover'); if(!star.classList.contains('selected')){star.textContent='★';} }else{ star.classList.remove('hover'); if(!star.classList.contains('selected')){star.textContent='☆';} } }); } function setupStarInteraction(container,ratingUpdateCallback,clickCallback=null){ if(!container)return; // [cite: 269]
+container.addEventListener('mouseover',event=>{ if(event.target.classList.contains('input-star')){ const hoverRating=parseInt(event.target.dataset.value,10); handleStarHover(container,hoverRating); } }); container.addEventListener('mouseout',()=>{ const currentRating=container===popupStarsContainer?currentPopupRating:currentPageRating; updateStarDisplay(container,currentRating); }); // [cite: 270]
+container.addEventListener('click',event=>{ if(event.target.classList.contains('input-star')){ const clickedRating=parseInt(event.target.dataset.value,10); ratingUpdateCallback(clickedRating); updateStarDisplay(container,clickedRating); if(clickCallback){clickCallback(clickedRating);} } }); } document.addEventListener('DOMContentLoaded',()=>{ popup=document.getElementById('review-popup'); popupContent=document.getElementById('review-popup-content'); popupCloseBtn=document.getElementById('popup-close-btn'); popupSubmitBtn=document.getElementById('popup-submit-btn'); popupStarsContainer=document.getElementById('popup-rating-stars'); popupReviewText=document.getElementById('review-text-input'); pageStarsContainer=document.getElementById('page-rating-stars'); writeReviewBtn=document.getElementById('write-review-btn'); pageContainer=document.querySelector('.review-page-container'); if(!pageContainer){console.error("Review page container not found!");} if(!popup||!popupContent||!popupCloseBtn||!popupSubmitBtn||!popupStarsContainer||!popupReviewText||!pageStarsContainer||!writeReviewBtn){console.error("Essential review page elements missing.");} if(pageStarsContainer){setupStarInteraction(pageStarsContainer,rating=>{currentPageRating=rating;},rating=>{openReviewPopup('rating',rating);});} if(popupStarsContainer){setupStarInteraction(popupStarsContainer,rating=>{currentPopupRating=rating;});} if(writeReviewBtn){writeReviewBtn.addEventListener('click',event=>{event.preventDefault();openReviewPopup('writing',0);});} if(popupCloseBtn)popupCloseBtn.addEventListener('click',closeReviewPopup); // [cite: 271]
+if(popupSubmitBtn)popupSubmitBtn.addEventListener('click',submitReview); if(popup){popup.addEventListener('click',event=>{if(event.target===popup){closeReviewPopup();}});} }); })(); <\/script></body></html>`; // [cite: 272]
+        }
+
+
+        // Episodes Page Template
+        function createEpisodesPage(title, language) { /* ... (Implementation assumed correct) ... */
+            const safeTitle = escapeHtml(title);
+            const safeLanguage = escapeHtml(language); // [cite: 272]
+            return `<html><head><title>${safeTitle} - Episodes</title><style>body{background:#1a1a1a;color:white;font-family:'Inter',sans-serif;padding:2rem;}h1{color:#ff6200;}</style></head><body><h1>Episodes for ${safeTitle} (${safeLanguage})</h1><p>Episode list placeholder.</p></body></html>`; // [cite: 273]
+        }
+
+        // Related Content Page Template
+        function createRelatedPage(title, language) { /* ... (Implementation assumed correct) ... */
+            const safeTitle = escapeHtml(title); // [cite: 274]
+            const safeLanguage = escapeHtml(language);
+            return `<html><head><title>${safeTitle} - Related</title><style>body{background:#1a1a1a;color:white;font-family:'Inter',sans-serif;padding:2rem;}h1{color:#ff6200;}</style></head><body><h1>Related to ${safeTitle} (${safeLanguage})</h1><p>Related content placeholder.</p></body></html>`; // [cite: 275]
+        }
+
+
+        // --- Global Function for Child Window Communication ---
+        function createPageContent(pageType, title, language) {
+             console.log(`createPageContent called for: ${pageType}, Title: ${title}, Lang: ${language}`); // [cite: 276]
+             let genres = []; // [cite: 277]
+             try {
+                const langData = data[language];
+                if (langData) { // [cite: 277, 278]
+                     const audiobook = langData.find(item => item && item.title === title);
+                     // Add check for item // [cite: 278]
+                     if (audiobook && Array.isArray(audiobook.genres)) {
+                         genres = audiobook.genres; // [cite: 279]
+                         console.log(`Found genres for ${title}:`, genres); // [cite: 280]
+                     } else {
+                         console.log(`Audiobook or genres not found for ${title} in ${language}`); // [cite: 280, 281]
+                     }
+                 } else {
+                     console.log(`Language data not found for ${language}`); // [cite: 281, 282]
+                 }
+             } catch (e) {
+                 console.error("Error finding genres:", e); // [cite: 282, 283]
+             }
+
+             switch(pageType) {
+                case 'Reviews': return createReviewsPage(title, language, genres);
+                case 'Episodes': return createEpisodesPage(title, language); // [cite: 283, 284]
+                case 'Related': return createRelatedPage(title, language); // [cite: 284, 285]
+                default:
+                    console.error("Invalid page type requested:", pageType); // [cite: 285]
+                    return '<html><body>Error: Invalid Page Type</body></html>'; // [cite: 286]
+            }
+        }
+
+        // --- Main Processing Logic (For Explorer View) ---
+        // ********** MODIFIED FUNCTION START **********
+        function processContent() {
+            console.log("Running processContent..."); // More logging
+            const resultsDiv = document.getElementById("results");
+            const mainElement = document.getElementById("main-content-area"); // [cite: 287, 288]
+
+            if (!resultsDiv || !mainElement) {
+                console.error("Error: Could not find #results or #main-content-area element!"); // [cite: 289]
+                if (mainElement && !resultsDiv) {
+                     console.warn("#results div missing, creating it.");
+                     const newResultsDiv = document.createElement("div"); // [cite: 290, 291]
+                     newResultsDiv.id = "results";
+                     mainElement.appendChild(newResultsDiv);
+                     // Re-assign resultsDiv, though the rest of the function might fail if called again immediately
+                } else {
+                     return; // Stop if containers are missing // [cite: 291, 292]
+                }
+            }
+            resultsDiv.innerHTML = ""; // Clear previous standard results // [cite: 292, 293]
+
+            // --- Remove existing recommendation section before re-rendering ---
+            const existingRecSection = mainElement.querySelector('.recommendation-section'); // [cite: 293]
+            if (existingRecSection) {
+                 console.log("Removing existing recommendation section."); // [cite: 294]
+                 mainElement.removeChild(existingRecSection); // [cite: 295]
+            }
+
+            // --- 1. Get Preferences & Flatten Data ---
+            let prefs = {}; // [cite: 295]
+            try {
+                 prefs = getPreferences(); // [cite: 296, 297]
+            } catch(e) {
+                console.error("Failed to get preferences:", e); // [cite: 297]
+                prefs = { likedGenres: new Set(), dislikedTitles: new Set() }; // Fallback // [cite: 298]
+            }
+
+            let allAudiobooksFlat = []; // [cite: 299]
+            try {
+                for (const lang in data) {
+                    if (Object.hasOwnProperty.call(data, lang) && Array.isArray(data[lang])) {
+                        data[lang].forEach(item => { // [cite: 300]
+                            if (item && typeof item === 'object' && item.title && Array.isArray(item.genres)) {
+                                 allAudiobooksFlat.push({ ...item, _lang: lang });
+                            } else { console.warn("Skipping invalid item:", item, lang); } // [cite: 301]
+                        }); // [cite: 302]
+                    }
+                } // [cite: 303]
+            } catch (e) {
+                 console.error("Error flattening audiobook data:", e); // [cite: 303, 304]
+                 allAudiobooksFlat = []; // Prevent errors later if flattening failed // [cite: 304, 305]
+            }
+            console.log(`Flattened ${allAudiobooksFlat.length} audiobooks.`); // [cite: 305]
+
+            const dislikedTitles = prefs.dislikedTitles instanceof Set ? prefs.dislikedTitles : new Set(); // Ensure dislikedTitles is a Set
+
+            // Filter out disliked titles from the full list ONCE
+            const availableAudiobooks = allAudiobooksFlat.filter(item =>
+                item && typeof item.title === 'string' && !dislikedTitles.has(item.title)
+            );
+
+            // --- 2. Generate Recommendations (Personalized or Random) ---
+            let recommendedItems = [];
+            let isPersonalized = false; // Flag to know which type of recommendation we have
+
+            if (prefs.likedGenres instanceof Set && prefs.likedGenres.size > 0 && availableAudiobooks.length > 0) {
+                 // PERSONALIZED: Filter based on liked genres
+                 console.log("Filtering recommendations based on liked genres:", Array.from(prefs.likedGenres)); // [cite: 307]
+                 recommendedItems = availableAudiobooks.filter(item => {
+                     const genresExist = Array.isArray(item.genres);
+                     if (!genresExist) return false; // Skip items without genres
+                     return item.genres.some(g => prefs.likedGenres.has(g)); // [cite: 308, 309]
+                 });
+                 recommendedItems = getRandomItems(recommendedItems, 10); // Get random subset of personalized matches // [cite: 310]
+                 console.log(`Found ${recommendedItems.length} personalized recommendations.`);
+                 isPersonalized = true; // [cite: 311]
+            }
+
+            // If NO personalized recommendations were generated (either no liked genres or no matches), get RANDOM ones
+            if (recommendedItems.length === 0 && availableAudiobooks.length > 0) {
+                 console.log("No personalized recommendations found or no liked genres. Generating random recommendations.");
+                 recommendedItems = getRandomItems(availableAudiobooks, 10); // Get 10 random from available (already filtered for disliked)
+                 console.log(`Generated ${recommendedItems.length} random recommendations.`);
+                 isPersonalized = false;
+            }
+
+            // --- 3. Render Recommendation Section ---
+             if (recommendedItems.length > 0) { // [cite: 312]
+                 try {
+                     const recSection = document.createElement("div");
+                     recSection.className = "content-category recommendation-section"; // [cite: 313]
+                     const recHeader = document.createElement("h2");
+                     // Adjust header text slightly if desired based on isPersonalized, or keep it general
+                     recHeader.textContent = "Recommended For You"; // You could adjust this based on 'isPersonalized' if needed
+                     recSection.appendChild(recHeader);
+                     const recScrollContainer = document.createElement("div");
+                     recScrollContainer.className = "scroll-container"; // [cite: 314]
+
+                     recommendedItems.forEach(item => {
+                          if (item && item.title) { // Ensure item has necessary properties
+                             const card = createAudiobookCardElement(item); // Use helper // [cite: 315]
+                             recScrollContainer.appendChild(card);
+                          }
+                     });
+                     recSection.appendChild(recScrollContainer); // [cite: 316]
+                     mainElement.insertBefore(recSection, resultsDiv); // Insert before standard results
+                     console.log("Recommendation section rendered."); // [cite: 316, 317]
+                 } catch (e) {
+                     console.error("Error rendering recommendation section:", e); // [cite: 317, 318]
+                 }
+             } else {
+                 // This case should ideally not happen if availableAudiobooks > 0,
+                 // but good to log if it does.
+                 console.log("No recommended items (neither personalized nor random) could be generated."); // [cite: 318]
+             }
+
+
+            // --- 4. Define and Populate Standard Categories ---
+            const standardLists = {
+                "TOP 10": { filter: null }, // Example: No filter // [cite: 323]
+                "Timeless Thrillers": { filter: genreFilters["Timeless Thrillers"] },
+                "Feel-Good Refreshments": { filter: genreFilters["Feel-Good Refreshments"] },
+                "Astounding Adventures": { filter: genreFilters["Astounding Adventures"] } // [cite: 324]
+            };
+            const populatedStandardLists = {}; // [cite: 325]
+
+            try {
+                for (const listName in standardLists) {
+                    if (Object.hasOwnProperty.call(standardLists, listName)) {
+                        const listFilter = standardLists[listName].filter; // [cite: 325]
+                        // Use the 'availableAudiobooks' list which already has disliked items removed
+                        let listItems = listFilter ?
+                            filterContent(availableAudiobooks, listFilter) : // [cite: 326]
+                            availableAudiobooks.slice(); // Use slice to avoid modifying // [cite: 327]
+
+                        // No need to filter disliked titles again here, already done
+                        // const dislikedTitles = prefs.dislikedTitles instanceof Set ? prefs.dislikedTitles : new Set(); // Removed redundancy // [cite: 327, 328]
+                        // listItems = listItems.filter(item => item && typeof item.title === 'string' && !dislikedTitles.has(item.title));
+                        populatedStandardLists[listName] = { items: getRandomItems(listItems, 10) }; // [cite: 329]
+                    }
+                }
+            } catch (e) {
+                 console.error("Error populating standard lists:", e); // [cite: 329, 330]
+            }
+
+
+            // --- 5. Render Standard Categories ---
+            console.log("Rendering standard categories..."); // [cite: 330]
+            try {
+                for (const listName in populatedStandardLists) {
+                    if (Object.hasOwnProperty.call(populatedStandardLists, listName)) {
+                        const listData = populatedStandardLists[listName]; // [cite: 331]
+                        const section = document.createElement("div");
+                        section.className = "content-category"; // [cite: 332]
+                        const header = document.createElement("h2");
+                        header.textContent = listName;
+                        section.appendChild(header);
+                        const scrollContainer = document.createElement("div");
+                        scrollContainer.className = "scroll-container"; // [cite: 333]
+
+                        if (!listData.items || listData.items.length === 0) {
+                            const card = document.createElement("div");
+                            card.className = "audiobook-card"; // [cite: 333, 334]
+                            card.innerHTML = `<div class="card-content" style="padding-top: 50px; padding-bottom: 50px; color: #888;"><p>No content available.</p></div>`;
+                            scrollContainer.appendChild(card); // [cite: 334]
+                        } else {
+                            listData.items.forEach(item => {
+                                 if (item && item.title) { // Check item validity // [cite: 335]
+                                    const card = createAudiobookCardElement(item); // Use helper // [cite: 336]
+                                    scrollContainer.appendChild(card);
+                                 }
+                            }); // [cite: 337]
+                        }
+                        section.appendChild(scrollContainer); // [cite: 338]
+                        resultsDiv.appendChild(section); // Append to #results div // [cite: 339]
+                    }
+                }
+            } catch (e) {
+                 console.error("Error rendering standard categories:", e); // [cite: 339, 340]
+            }
+            console.log("Standard category rendering finished."); // [cite: 340]
+        } // End processContent
+        // ********** MODIFIED FUNCTION END **********
+
+         // Helper function to create a single audiobook card element (Ensure defined before use)
+         function createAudiobookCardElement(item) {
+             const card = document.createElement("div");
+             card.className = "audiobook-card"; // [cite: 341, 342]
+             const safeTitle = escapeHtml(item.title);
+             // Language should be on the item object from flattening
+             const language = item._lang || 'Unknown'; // [cite: 342]
+             const safeLanguage = escapeHtml(language); // [cite: 343]
+
+             card.innerHTML = `
+                 <div class="image-placeholder">Cover Art</div>
+                 <div class="card-content">
+                     <h3>${safeTitle}</h3>
+                     <p>(${safeLanguage})</p>
+                 </div>`; // [cite: 343, 344]
+
+             card.addEventListener("click", () => {
+                 console.log(`Card clicked: ${item.title}`);
+                 try {
+                     const audiobookContent = createAudiobookPage(item.title, language);
+                     const audiobookWindow = window.open("", "_blank"); // [cite: 344]
+                     if (audiobookWindow) {
+                         audiobookWindow.opener = window;
+                         audiobookWindow.document.write(audiobookContent);
+                         audiobookWindow.document.close(); // [cite: 345]
+                     } else { alert('Popup blocked.'); } // [cite: 346]
+                 } catch (e) { console.error("Error opening audiobook page:", e); alert("Error opening page."); }
+             });
+             return card; // [cite: 346, 347]
+         }
+
+        // --- Initial Load ---
+        // Ensure all functions are defined before this runs
+        window.addEventListener("load", processContent); // [cite: 347, 348]
+    </script>
+
+</body>
+</html>

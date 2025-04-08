@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
 <head>
-    <meta charset= " UTF-8">
-    <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multilingual Content Explorer</title>
-    <link href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel = "stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -172,10 +172,12 @@
             <br><br>
             <button id="submitBtn">Show Content</button>
         </div>
+
         <div id="results" class="content-category"></div>
     </main>
 
     <script>
+        // Data without images (using placeholder in HTML)
         const data = {
             "Hindi": [
                 { title: "Dil Bechara", genres: ["Romance", "Drama", "Coming-of-age"] },
@@ -257,7 +259,7 @@
             let copy = arr.slice();
             let result = [];
             while (result.length < count) {
-                if (copy.length === 0) copy = arr.slice();
+                if (copy.length === 0) copy = arr.slice(); // Reset if we run out
                 let idx = Math.floor(Math.random() * copy.length);
                 result.push(copy.splice(idx, 1)[0]);
             }
@@ -300,19 +302,23 @@
             const selectedLangs = Array.from(checkboxes).map(cb => cb.value);
             const resultsDiv = document.getElementById("results");
             resultsDiv.innerHTML = "";
+
             if (selectedLangs.length === 0) {
                 resultsDiv.innerHTML = "<p style='color: #d3d3d3;'>Please select at least one language.</p>";
                 return;
             }
+
             const lists = {
                 "TOP 10": { filter: null },
                 "Timeless Thrillers": { filter: genreFilters["Timeless Thrillers"] },
                 "Feel-Good Refreshments": { filter: genreFilters["Feel-Good Refreshments"] },
                 "Astounding Adventures": { filter: genreFilters["Astounding Adventures"] }
             };
+
             for (let listName in lists) {
                 let listFilter = lists[listName].filter;
                 let combined = [];
+
                 let baseCount = Math.floor(10 / selectedLangs.length);
                 let remainder = 10 % selectedLangs.length;
                 selectedLangs.forEach((lang, idx) => {
@@ -325,15 +331,19 @@
                     selectedItems = selectedItems.map(item => ({...item, language: lang}));
                     combined = combined.concat(selectedItems);
                 });
+
+                // Ensure exactly 10 items by padding with random repeats if needed
                 if (combined.length < 10) {
                     let additionalItems = getRandomItems(combined, 10 - combined.length);
                     combined = combined.concat(additionalItems);
                 }
+
                 if (listName === "TOP 10") {
-                    combined = getRandomItems(combined, 10);
+                    combined = getRandomItems(combined, 10); // Always 10 for TOP 10
                 } else {
-                    combined = combined.slice(0, 10);
+                    combined = combined.slice(0, 10); // Trim to 10 if more
                 }
+
                 if (selectedLangs.length > 1) {
                     combined = reorderConstrained(combined);
                 }
@@ -348,6 +358,7 @@
                 section.appendChild(header);
                 let scrollContainer = document.createElement("div");
                 scrollContainer.className = "scroll-container";
+
                 if (lists[listName].items.length === 0) {
                     let card = document.createElement("div");
                     card.className = "audiobook-card";
@@ -371,6 +382,7 @@
                 resultsDiv.appendChild(section);
             }
         }
+
         document.getElementById("submitBtn").addEventListener("click", function(e) {
             e.preventDefault();
             processContent();
